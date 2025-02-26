@@ -1,40 +1,34 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\38597\\Desktop\\CityScope\\API\\Application\\Application.csproj": {}
+    "/Users/toniivanovic/RiderProjects/CityScope/API/Application/Application.csproj": {}
   },
   "projects": {
-    "C:\\Users\\38597\\Desktop\\CityScope\\API\\Application\\Application.csproj": {
+    "/Users/toniivanovic/RiderProjects/CityScope/API/Application/Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\38597\\Desktop\\CityScope\\API\\Application\\Application.csproj",
+        "projectUniqueName": "/Users/toniivanovic/RiderProjects/CityScope/API/Application/Application.csproj",
         "projectName": "Application",
-        "projectPath": "C:\\Users\\38597\\Desktop\\CityScope\\API\\Application\\Application.csproj",
-        "packagesPath": "C:\\Users\\38597\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\38597\\Desktop\\CityScope\\API\\Application\\obj\\",
+        "projectPath": "/Users/toniivanovic/RiderProjects/CityScope/API/Application/Application.csproj",
+        "packagesPath": "/Users/toniivanovic/.nuget/packages/",
+        "outputPath": "/Users/toniivanovic/RiderProjects/CityScope/API/Application/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\38597\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/toniivanovic/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
             "targetAlias": "net8.0",
             "projectReferences": {
-              "C:\\Users\\38597\\Desktop\\CityScope\\API\\Domain\\Domain.csproj": {
-                "projectPath": "C:\\Users\\38597\\Desktop\\CityScope\\API\\Domain\\Domain.csproj"
+              "/Users/toniivanovic/RiderProjects/CityScope/API/Domain/Domain.csproj": {
+                "projectPath": "/Users/toniivanovic/RiderProjects/CityScope/API/Domain/Domain.csproj"
               }
             }
           }
@@ -69,33 +63,27 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\38597\\Desktop\\CityScope\\API\\Domain\\Domain.csproj": {
+    "/Users/toniivanovic/RiderProjects/CityScope/API/Domain/Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\38597\\Desktop\\CityScope\\API\\Domain\\Domain.csproj",
+        "projectUniqueName": "/Users/toniivanovic/RiderProjects/CityScope/API/Domain/Domain.csproj",
         "projectName": "Domain",
-        "projectPath": "C:\\Users\\38597\\Desktop\\CityScope\\API\\Domain\\Domain.csproj",
-        "packagesPath": "C:\\Users\\38597\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\38597\\Desktop\\CityScope\\API\\Domain\\obj\\",
+        "projectPath": "/Users/toniivanovic/RiderProjects/CityScope/API/Domain/Domain.csproj",
+        "packagesPath": "/Users/toniivanovic/.nuget/packages/",
+        "outputPath": "/Users/toniivanovic/RiderProjects/CityScope/API/Domain/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\38597\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/Users/toniivanovic/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-          "C:\\Program Files\\dotnet\\library-packs": {},
+          "/usr/local/share/dotnet/library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -134,7 +122,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.302/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.404/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
