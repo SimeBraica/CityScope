@@ -2,13 +2,15 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_mobile/core/resources/data_state.dart';
+import 'package:flutter_mobile/features/auth/data/data_sources/local/app_database.dart';
 import 'package:flutter_mobile/features/auth/data/data_sources/remote/auth_api_service.dart';
 import 'package:flutter_mobile/features/auth/data/models/logged_in_user_model.dart';
 import 'package:flutter_mobile/features/auth/domain/repositories/i_auth_repository.dart';
 
 class AuthRepository implements IAuthRepository {
   final AuthApiService _authApiService;
-  AuthRepository(this._authApiService);
+  final AppDatabase _appDatabase;
+  AuthRepository(this._authApiService, this._appDatabase);
 
   @override
   Future<DataState<LoggedInUserModel>> login(
@@ -83,5 +85,11 @@ class AuthRepository implements IAuthRepository {
     } on DioException catch (e) {
       return DataFailed(e);
     }
+  }
+
+  // samo za primjer
+  @override
+  Future<LoggedInUserModel?> getLoggedInUser() async {
+    return _appDatabase.loggedInUserDao.getLoggedInUser();
   }
 }

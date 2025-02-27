@@ -7,6 +7,7 @@ import 'package:flutter_mobile/features/auth/presentation/pages/login/login.dart
 import 'package:flutter_mobile/injection_container.dart';
 
 Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await initializeDependencies();
   runApp(const MyApp());
 }

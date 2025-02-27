@@ -1,7 +1,13 @@
 import 'package:flutter_mobile/features/auth/domain/entities/logged_in_user_entity.dart';
+import 'package:floor/floor.dart';
 
+@Entity(primaryKeys: ['id'])
 class LoggedInUserModel extends LoggedInUserEntity {
-  LoggedInUserModel({
+  @PrimaryKey(autoGenerate: true)
+  final int? id; // ovako je jer ne očekujem da ćemo slat Id s backenda, ako budemo onda samo ubacit dole required super.id
+
+  const LoggedInUserModel({
+    this.id,
     required super.email,
     required super.username,
     required super.latitude,
@@ -13,6 +19,7 @@ class LoggedInUserModel extends LoggedInUserEntity {
 
   factory LoggedInUserModel.fromJson(Map<String, dynamic> json) {
     return LoggedInUserModel(
+      id: json['id'],
       email: json['email'],
       username: json['username'],
       latitude: json['latitude'],
@@ -25,6 +32,7 @@ class LoggedInUserModel extends LoggedInUserEntity {
 
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'email': email,
       'username': username,
       'latitude': latitude,
