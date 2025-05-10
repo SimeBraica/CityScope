@@ -20,7 +20,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  Locale? _locale;
+  Locale? _locale = const Locale('hr');
 
   void setLocale(Locale locale) {
     setState(() {
@@ -34,7 +34,7 @@ class _MyAppState extends State<MyApp> {
       setLocale: setLocale,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        locale: _locale,
+        locale: _locale ?? const Locale('hr'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -42,6 +42,16 @@ class _MyAppState extends State<MyApp> {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        localeResolutionCallback: (locale, supportedLocales) {
+          if (_locale != null) return _locale!;
+          if (locale == null) return const Locale('hr');
+          for (var supportedLocale in supportedLocales) {
+            if (supportedLocale.languageCode == locale.languageCode) {
+              return supportedLocale;
+            }
+          }
+          return const Locale('hr');
+        },
         home: FutureBuilder(
           future: Firebase.initializeApp(),
           builder: (context, snapshot) {

@@ -302,11 +302,11 @@ class _LoginState extends State<Login> {
                     ),
                     const SizedBox(height: 24),
                     Row(
-                      children: const [
+                      children: [
                         Expanded(child: Divider()),
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Text('Ili nastavi sa', style: TextStyle(color: Colors.grey)),
+                          child: Text(AppLocalizations.of(context)!.continueWith, style: const TextStyle(color: Colors.grey)),
                         ),
                         Expanded(child: Divider()),
                       ],

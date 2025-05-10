@@ -15,7 +15,7 @@
   "enable2fa": "Uključi 2FA",
   "privacyPolicy": "Politika privatnosti",
   "privacyDemo": "CityScope je demo projekt i ne prikuplja osobne podatke korisnika u komercijalne svrhe. Svi podaci koji se koriste služe isključivo za demonstraciju funkcionalnosti aplikacije.",
-  "privacyContact": "For any privacy-related questions or requests, contact: tivanovic21@student.foi.hr / sime.braica13@gmail.com",
+  "privacyContact": "Za bilo kakve upite vezane uz privatnost kontaktirajte: tivanovic21@student.foi.hr / sime.braica13@gmail.com",
   "privacyDisclaimer": "Ova politika privatnosti služi isključivo u svrhu demonstracije i nije pravno obvezujuća.",
   "cancel": "Odustani",
   "confirm": "Potvrdi",
@@ -49,5 +49,18 @@
   "save": "Spremi",
   "changeLanguage": "Promijeni jezik",
   "continueWith": "ili nastavi sa",
-  "exampleEmail": "primjer@email.com"
+  "exampleEmail": "primjer@email.com",
+  "interestsMusic": "Glazbeni ukus",
+  "interestsFood": "Hrana i piće",
+  "interestAttractions": "Znamenitosti",
+  "interestsCulture": "Kultura",
+  "interestHobbies": "Hobiji",
+  "addToFavorites": "Dodaj u favorite",
+  "favorites": "Favoriti",
+  "noFavorites": "Nemate favorita",
+  "allGenresSelected": "Odabrani su svi žanrovi",
+  "allFoodSelected": "Odabrane su sve kuhinje",
+  "allCulturesSelected": "Odabrane su sve kulturološke lokacije",
+  "allAttractionsSelected": "Odabrane su sve atrakcije",
+  "allHobbiesSelected": "Odabrani su svi hobiji"
 } 

@@ -48,6 +48,19 @@
   "send": "Send",
   "save": "Save",
   "changeLanguage": "Change language",
-  "continueWith": "ili nastavi sa",
-  "exampleEmail": "example@email.com"
+  "continueWith": "or continue with",
+  "exampleEmail": "example@email.com",
+  "interestsMusic": "Music",
+  "interestsFood": "Food and drinks",
+  "interestAttractions": "Attractions",
+  "interestsCulture": "Culture",
+  "interestHobbies": "Hobbies",
+  "addToFavorites": "Add to favorites",
+  "favorites": "Favorites",
+  "noFavorites": "You don't have any favorites",
+  "allGenresSelected": "All genres have been selected",
+  "allFoodSelected": "All kitchens have been selected",
+  "allCulturesSelected": "All cultural places have been selected",
+  "allAttractionsSelected": "All attractions have been selected",
+  "allHobbiesSelected": "All hobbies have been selected"
 } 
