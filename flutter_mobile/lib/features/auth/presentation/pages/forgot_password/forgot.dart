@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({Key? key}) : super(key: key);
@@ -24,21 +25,21 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         email: _emailController.text.trim(),
       );
       setState(() {
-        _message = 'Email za resetiranje lozinke je poslan!';
+        _message = AppLocalizations.of(context)!.resetEmailSent;
       });
     } on FirebaseAuthException catch (e) {
       setState(() {
         if (e.code == 'user-not-found') {
-          _message = 'Korisnik s tom email adresom ne postoji.';
+          _message = AppLocalizations.of(context)!.userNotFound;
         } else if (e.code == 'invalid-email') {
-          _message = 'Email nije ispravnog formata!';
+          _message = AppLocalizations.of(context)!.invalidEmail;
         } else {
           _message = e.message;
         }
       });
     } catch (e) {
       setState(() {
-        _message = 'Došlo je do greške. Pokušajte ponovno.';
+        _message = AppLocalizations.of(context)!.errorOccurred;
       });
     } finally {
       setState(() {
@@ -63,22 +64,22 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Zaboravljena lozinka',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context)!.forgotPassword,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 26,
                 color: Colors.black87,
               ),
             ),
             const SizedBox(height: 24),
-            const Text('Email adresa', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(AppLocalizations.of(context)!.email, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
-                hintText: 'email@primjer.com',
+                hintText: AppLocalizations.of(context)!.exampleEmail,
                 filled: true,
                 fillColor: Colors.grey[100],
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -101,7 +102,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               Text(
                 _message!,
                 style: TextStyle(
-                  color: _message == 'Email za resetiranje lozinke je poslan!'
+                  color: _message == AppLocalizations.of(context)!.resetEmailSent
                       ? Colors.green
                       : Colors.red,
                   fontWeight: FontWeight.w600,
@@ -131,9 +132,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           strokeWidth: 2.5,
                         ),
                       )
-                    : const Text(
-                        'Pošalji link za resetiranje',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                    : Text(
+                        AppLocalizations.of(context)!.sendResetLink,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                       ),
               ),
             ),

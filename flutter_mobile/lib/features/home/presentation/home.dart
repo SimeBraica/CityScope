@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobile/features/auth/presentation/pages/login/login.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_mobile/features/settings/pages/settings.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,12 +29,10 @@ class _HomePageState extends State<HomePage> {
 
 
   Future<void> _getLocation() async {
-    print('Pokrećem dohvat lokacije (geolocator)...');
     bool serviceEnabled;
     LocationPermission permission;
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    print('Service enabled: $serviceEnabled');
     if (!serviceEnabled) {
       if (mounted) {
         setState(() {
@@ -44,10 +44,8 @@ class _HomePageState extends State<HomePage> {
     }
 
     permission = await Geolocator.checkPermission();
-    print('Permission: $permission');
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
-      print('Permission after request: $permission');
       if (permission == LocationPermission.denied) {
         if (mounted) {
           setState(() {
@@ -74,7 +72,6 @@ class _HomePageState extends State<HomePage> {
         desiredAccuracy: LocationAccuracy.high,
         timeLimit: const Duration(seconds: 5),
       );
-      print('Dohvaćena lokacija: ${position.latitude}, ${position.longitude}');
       if (mounted) {
         setState(() {
           _currentPosition = LatLng(position.latitude, position.longitude);
@@ -130,12 +127,12 @@ class _HomePageState extends State<HomePage> {
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 18),
               ),
-              child: const Row(
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('ISTRAŽI PODRUČJE', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
-                  SizedBox(width: 8),
-                  Icon(Icons.arrow_forward, color: Colors.white),
+                  Text(AppLocalizations.of(context)!.exploreArea, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.arrow_forward, color: Colors.white),
                 ],
               ),
             ),
@@ -151,7 +148,7 @@ class _HomePageState extends State<HomePage> {
     } else if (_selectedIndex == 0) {
       return const Center(child: Text('Izdvojeno', style: TextStyle(fontSize: 24)));
     } else {
-      return const Center(child: Text('Postavke', style: TextStyle(fontSize: 24)));
+      return const SettingsPage();
     }
   }
 
@@ -166,40 +163,23 @@ class _HomePageState extends State<HomePage> {
             _selectedIndex = index;
           });
         },
-        items: const [
+        items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.star_border),
-            label: 'Izdvojeno',
+            icon: const Icon(Icons.star_border),
+            label: AppLocalizations.of(context)!.featured,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Mapa',
+            icon: const Icon(Icons.map),
+            label: AppLocalizations.of(context)!.map,
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Postavke',
+            icon: const Icon(Icons.settings),
+            label: AppLocalizations.of(context)!.settings,
           ),
         ],
-        selectedItemColor: Color(0xFF368564),
+        selectedItemColor: const Color(0xFF368564),
         unselectedItemColor: Colors.grey,
         backgroundColor: Colors.white,
-      ),
-      appBar: AppBar(
-        title: const Text('CityScope'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (_) => const Login()),
-                  (route) => false,
-                );
-              }
-            },
-          ),
-        ],
       ),
     );
   }

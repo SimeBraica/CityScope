@@ -11,6 +11,7 @@ import 'package:flutter_mobile/features/auth/presentation/pages/forgot_password/
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_mobile/features/personalize/pages/personalize.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -147,7 +148,7 @@ class _LoginState extends State<Login> {
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
-                'Dobrodošli u CityScope!',
+                AppLocalizations.of(context)!.appTitle,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -177,7 +178,7 @@ class _LoginState extends State<Login> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
-                        hintText: 'Email adresa',
+                        hintText: AppLocalizations.of(context)!.email,
                         filled: true,
                         fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -200,7 +201,7 @@ class _LoginState extends State<Login> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        hintText: 'Lozinka',
+                        hintText: AppLocalizations.of(context)!.password,
                         filled: true,
                         fillColor: Colors.white,
                         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -239,9 +240,9 @@ class _LoginState extends State<Login> {
                           );
                         },
                         style: TextButton.styleFrom(padding: EdgeInsets.zero),
-                        child: const Text(
-                          'Zaboravljena lozinka?',
-                          style: TextStyle(color: Color(0xFFFA7E19), fontWeight: FontWeight.w600),
+                        child: Text(
+                          AppLocalizations.of(context)!.forgotPasswordQuestion,
+                          style: const TextStyle(color: Color(0xFFFA7E19), fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -273,25 +274,28 @@ class _LoginState extends State<Login> {
                                 strokeWidth: 2.5,
                               ),
                             )
-                          : const Text(
-                              'Prijava',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                          : Text(
+                              AppLocalizations.of(context)!.login,
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                             ),
                     ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text('Novi korisnik? ', style: TextStyle(color: Colors.grey, fontSize: 16)),
+                        Text(
+                          AppLocalizations.of(context)!.newUser,
+                          style: const TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
                         GestureDetector(
                           onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const RegisterPage()),
                             );
                           },
-                          child: const Text(
-                            'Registriraj se',
-                            style: TextStyle(color: Color(0xFFFA7E19), fontWeight: FontWeight.w600, fontSize: 16),
+                          child: Text(
+                            AppLocalizations.of(context)!.registerNow,
+                            style: const TextStyle(color: Color(0xFFFA7E19), fontWeight: FontWeight.w600, fontSize: 16),
                           ),
                         ),
                       ],

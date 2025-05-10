@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobile/features/home/presentation/home.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PersonalizePage extends StatefulWidget {
   const PersonalizePage({Key? key}) : super(key: key);
@@ -68,12 +69,12 @@ class _PersonalizePageState extends State<PersonalizePage> {
                           minHeight: 6,
                         ),
                         const SizedBox(height: 24),
-                        const Text(
-                          'Personaliziraj svoje iskustvo',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 26, color: Color(0xFF484751)),
+                        Text(
+                          AppLocalizations.of(context)!.personalizeExperience,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 26, color: Color(0xFF484751)),
                         ),
                         const SizedBox(height: 8),
-                        const Text('Odaberi interese.', style: TextStyle(color: Colors.grey)),
+                        Text(AppLocalizations.of(context)!.chooseInterests, style: const TextStyle(color: Colors.grey)),
                         const SizedBox(height: 16),
                       ],
                     ),
@@ -138,7 +139,7 @@ class _PersonalizePageState extends State<PersonalizePage> {
                                   strokeWidth: 2.5,
                                 ),
                               )
-                            : const Text('Dalje', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+                            : Text(AppLocalizations.of(context)!.next, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
                       ),
                     ),
                   ),

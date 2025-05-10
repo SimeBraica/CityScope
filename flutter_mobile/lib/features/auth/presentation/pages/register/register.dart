@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -103,22 +104,15 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Registracija',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 26,
-                color: Colors.black87,
-              ),
-            ),
+            Text(AppLocalizations.of(context)!.register, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 26, color: Colors.black87)),
             const SizedBox(height: 24),
-            const Text('Email adresa', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(AppLocalizations.of(context)!.email, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             TextField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               decoration: InputDecoration(
-                hintText: 'email@primjer.com',
+                hintText: AppLocalizations.of(context)!.exampleEmail,
                 filled: true,
                 fillColor: Colors.grey[100],
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -137,13 +131,13 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Lozinka', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(AppLocalizations.of(context)!.password, style: const TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
             TextField(
               controller: _passwordController,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
-                hintText: 'Kreiraj lozinku',
+                hintText: AppLocalizations.of(context)!.changePassword,
                 filled: true,
                 fillColor: Colors.grey[100],
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -177,7 +171,7 @@ class _RegisterPageState extends State<RegisterPage> {
               controller: _confirmPasswordController,
               obscureText: _obscureConfirmPassword,
               decoration: InputDecoration(
-                hintText: 'Potvrdi lozinku',
+                hintText: AppLocalizations.of(context)!.confirmPassword,
                 filled: true,
                 fillColor: Colors.grey[100],
                 contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -220,17 +214,17 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
                 Expanded(
                   child: RichText(
-                    text: const TextSpan(
+                    text: TextSpan(
                       style: TextStyle(color: Colors.black87),
                       children: [
-                        TextSpan(text: 'Pročitao sam i slažem se sa '),
+                        TextSpan(text: AppLocalizations.of(context)!.termsAccepted),
                         TextSpan(
-                          text: 'Uvjetima poslovanja',
+                          text: AppLocalizations.of(context)!.termsOfService,
                           style: TextStyle(color: Color(0xFF368564), fontWeight: FontWeight.bold),
                         ),
                         TextSpan(text: ' i '),
                         TextSpan(
-                          text: 'Politikom privatnosti.',
+                          text: AppLocalizations.of(context)!.privacyPolicyShort,
                           style: TextStyle(color: Color(0xFF368564), fontWeight: FontWeight.bold),
                         ),
                       ],
@@ -269,9 +263,9 @@ class _RegisterPageState extends State<RegisterPage> {
                           strokeWidth: 2.5,
                         ),
                       )
-                    : const Text(
-                        'Registriraj se',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
+                    : Text(
+                        AppLocalizations.of(context)!.register,
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white),
                       ),
               ),
             ),
