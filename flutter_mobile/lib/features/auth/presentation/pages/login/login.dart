@@ -9,6 +9,8 @@ import 'package:flutter_mobile/features/home/presentation/home.dart';
 import 'package:flutter_mobile/features/auth/presentation/pages/register/register.dart';
 import 'package:flutter_mobile/features/auth/presentation/pages/forgot_password/forgot.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_mobile/features/personalize/pages/personalize.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -43,10 +45,29 @@ class _LoginState extends State<Login> {
         idToken: googleAuth.idToken,
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
+
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+          'email': user.email,
+          'authProvider': 'google',
+        }, SetOptions(merge: true));
+        // Provjeri preference
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        final prefs = userDoc.data()?['preferences'] as List?;
+        if (prefs == null || prefs.isEmpty) {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const PersonalizePage()),
+            );
+          }
+        } else {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HomePage()),
+            );
+          }
+        }
       }
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -73,10 +94,24 @@ class _LoginState extends State<Login> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomePage()),
-        );
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // Provjeri preference
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+        final prefs = userDoc.data()?['preferences'] as List?;
+        if (prefs == null || prefs.isEmpty) {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const PersonalizePage()),
+            );
+          }
+        } else {
+          if (mounted) {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (_) => const HomePage()),
+            );
+          }
+        }
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {

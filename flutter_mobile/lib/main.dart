@@ -4,7 +4,6 @@ import 'package:flutter_mobile/features/auth/presentation/pages/login/login.dart
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -15,7 +14,33 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: Login(),
+      home: FutureBuilder(
+        future: Firebase.initializeApp(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            return Login();
+          } else {
+            return const SplashScreen();
+          }
+        },
+      ),
+    );
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Color(0xFF368564),
+      body: Center(
+        child: Image.asset(
+          'assets/images/cityscope.png',
+          width: 180,
+        ),
+      ),
     );
   }
 }
