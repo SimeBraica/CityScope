@@ -67,5 +67,7 @@
   "notificationTime": "Time period for notifications",
   "geoNotifications": "Location based notifications",
   "eventReminders": "Remind me of liked events",
-  "notifyMeAbout": "REMIND ME ABOUT:"
+  "notifyMeAbout": "REMIND ME ABOUT:",
+  "selectFromTime": "Time FROM",
+  "selectToTime": "Time TO"
 } 

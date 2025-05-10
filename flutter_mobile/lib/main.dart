@@ -7,6 +7,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'l10n/l10n.dart';
 import 'core/locale_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:firebase_analytics/firebase_analytics.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Ovdje možeš obraditi poruke kada aplikacija nije aktivna
@@ -27,6 +28,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   Locale? _locale = const Locale('hr');
 
   void setLocale(Locale locale) {
@@ -41,7 +43,7 @@ class _MyAppState extends State<MyApp> {
       setLocale: setLocale,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        locale: _locale ?? const Locale('hr'),
+        locale: _locale,
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
           AppLocalizations.delegate,
@@ -59,20 +61,15 @@ class _MyAppState extends State<MyApp> {
           }
           return const Locale('hr');
         },
-        home: FutureBuilder(
-          future: Firebase.initializeApp(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return Login();
-            } else {
-              return const SplashScreen();
-            }
-          },
-        ),
+        home: Login(),
+        navigatorObservers: [
+          FirebaseAnalyticsObserver(analytics: _analytics),
+        ],
       ),
     );
   }
 }
+
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key}) : super(key: key);

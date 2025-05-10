@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:io' show Platform;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({Key? key}) : super(key: key);
@@ -12,41 +16,265 @@ class NotificationSettingsPage extends StatefulWidget {
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   bool notificationsEnabled = true;
   bool geoEnabled = false;
-  bool eventReminders = false;
-  TimeOfDay start = const TimeOfDay(hour: 12, minute: 0);
-  TimeOfDay end = const TimeOfDay(hour: 20, minute: 0);
-  List<String> topics = ['SKULPTURAMA', 'POVIJESNIM ČINJENICAMA'];
+  TimeOfDay from = const TimeOfDay(hour: 12, minute: 0);
+  TimeOfDay to = const TimeOfDay(hour: 20, minute: 0);
+  bool isLoading = true;
+  String? fcmToken;
 
   @override
   void initState() {
     super.initState();
-    _initFCM();
+    _loadUserSettings();
+  }
+
+  Future<void> _loadUserSettings() async {
+    setState(() {
+      isLoading = true;
+    });
+    
+    try {
+      // Get current user ID
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        // Fetch user settings from Firestore
+        final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+        if (doc.exists && doc.data() != null) {
+          final data = doc.data()!;
+          
+          setState(() {
+            notificationsEnabled = data['notificationsEnabled'] ?? true;
+            geoEnabled = data['geoEnabled'] ?? false;
+            
+            // Parse time settings if they exist
+            if (data['notificationTime'] != null) {
+              final timeData = data['notificationTime'];
+              if (timeData['from'] != null) {
+                final fromParts = timeData['from'].toString().split(':');
+                if (fromParts.length == 2) {
+                  from = TimeOfDay(
+                    hour: int.parse(fromParts[0]),
+                    minute: int.parse(fromParts[1]),
+                  );
+                }
+              }
+              
+              if (timeData['to'] != null) {
+                final toParts = timeData['to'].toString().split(':');
+                if (toParts.length == 2) {
+                  to = TimeOfDay(
+                    hour: int.parse(toParts[0]),
+                    minute: int.parse(toParts[1]),
+                  );
+                }
+              }
+            }
+          });
+        }
+      }
+      
+      // Check if Firebase Messaging should be initialized
+      if (!kIsWeb) { // Only use FCM on mobile platforms, not web
+        // Initialize Firebase Messaging and get token
+        await _initFCM();
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      // Handle errors gracefully
+      print('Error loading settings: $e');
+      setState(() {
+        isLoading = false; 
+      });
+    }
   }
 
   Future<void> _initFCM() async {
-    await FirebaseMessaging.instance.requestPermission();
-    // Ovdje možeš spremiti token korisnika u Firestore za ciljanje notifikacija
-  }
-
-  Future<void> _pickTime(bool isStart) async {
-    final picked = await showTimePicker(
-      context: context,
-      initialTime: isStart ? start : end,
-    );
-    if (picked != null) {
+    try {
+      // Platform-specific FCM initialization
+      if (Platform.isIOS) {
+        // For iOS, we need to handle APNS token differently
+        // First, get the APNs token when possible
+        String? apnsToken;
+        try {
+          apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+          print('APNS Token: $apnsToken');
+        } catch (apnsError) {
+          print('Error getting APNS token: $apnsError');
+          // Continue even if APNS token retrieval fails
+        }
+      }
+      
+      // Request notification permissions from the user
+      NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        // User granted permission
+        setState(() {
+          notificationsEnabled = true;
+        });
+        
+        // Get and store the FCM token with proper error handling
+        try {
+          fcmToken = await FirebaseMessaging.instance.getToken();
+          print('FCM Token: $fcmToken');
+          
+          // Save the token in Firestore for the current user
+          final userId = FirebaseAuth.instance.currentUser?.uid;
+          if (userId != null && fcmToken != null) {
+            await FirebaseFirestore.instance.collection('users').doc(userId).set({
+              'fcmToken': fcmToken,
+              'platform': Platform.isIOS ? 'ios' : 'android',
+              'lastTokenUpdate': FieldValue.serverTimestamp(),
+            }, SetOptions(merge: true));
+          }
+          
+          // Set up token refresh listener
+          FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+            // Update token in Firestore when it refreshes
+            final userId = FirebaseAuth.instance.currentUser?.uid;
+            if (userId != null) {
+              FirebaseFirestore.instance.collection('users').doc(userId).set({
+                'fcmToken': newToken,
+                'lastTokenUpdate': FieldValue.serverTimestamp(),
+              }, SetOptions(merge: true));
+            }
+          });
+        } catch (tokenError) {
+          // Handle specific errors related to token retrieval
+          print('Error getting FCM token: $tokenError');
+          // Continue with the app even if token retrieval fails
+        }
+      } else {
+        // User denied permission
+        setState(() {
+          notificationsEnabled = false;
+          geoEnabled = false; // Also disable geo notifications
+        });
+      }
+    } catch (e) {
+      print('Error initializing FCM: $e');
+      // Allow the app to continue without FCM if needed
+    } finally {
       setState(() {
-        if (isStart) start = picked;
-        else end = picked;
+        isLoading = false;
       });
     }
+  }
+
+  Future<void> _pickTimeRange() async {
+    // First pick the FROM time
+    final pickedFrom = await showTimePicker(
+      context: context,
+      initialTime: from,
+      helpText: 'Select FROM time',
+    );
+    
+    if (pickedFrom != null) {
+      setState(() {
+        from = pickedFrom;
+      });
+      
+      // Then pick the TO time
+      final pickedTo = await showTimePicker(
+        context: context,
+        initialTime: to,
+        helpText: 'Select TO time',
+      );
+      
+      if (pickedTo != null) {
+        setState(() {
+          to = pickedTo;
+        });
+        
+        // After both times are selected, save settings
+        _saveSettings();
+      }
+    }
+  }
+
+  Future<void> _saveSettings() async {
+    try {
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId == null) return;
+      
+      await FirebaseFirestore.instance.collection('users').doc(userId).set({
+        'notificationsEnabled': notificationsEnabled,
+        'geoEnabled': geoEnabled,
+        'notificationTime': {
+          'from': '${from.hour}:${from.minute}',
+          'to': '${to.hour}:${to.minute}',
+        },
+      }, SetOptions(merge: true));
+    } catch (e) {
+      // Handle error
+      print('Error saving settings: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to save settings: $e')),
+      );
+    }
+  }
+
+  Future<void> _toggleNotifications(bool value) async {
+    if (value) {
+      // If turning on notifications, request permission
+      NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      
+      if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional) {
+        setState(() {
+          notificationsEnabled = true;
+        });
+      } else {
+        // User denied permission
+        setState(() {
+          notificationsEnabled = false;
+          geoEnabled = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notification permission denied')),
+        );
+        return;
+      }
+    } else {
+      // Simply turn off notifications
+      setState(() {
+        notificationsEnabled = false;
+        geoEnabled = false; // Also disable geo notifications
+      });
+    }
+    
+    _saveSettings(); // Save the new settings
   }
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(loc.notifications ?? 'Notifications', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFF368564),
+          foregroundColor: Colors.white,
+        ),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(loc.notifications ?? 'Obavijesti', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text(loc.notifications ?? 'Notifications', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF368564),
         foregroundColor: Colors.white,
       ),
@@ -56,47 +284,36 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _settingRow(
-              loc.enableNotifications ?? 'Uključi obavijesti',
+              loc.enableNotifications ?? 'Enable notifications',
               notificationsEnabled,
-              (v) => setState(() => notificationsEnabled = v),
+              (v) => _toggleNotifications(v),
               activeColor: Colors.orange,
             ),
             const SizedBox(height: 16),
             _settingRow(
-              loc.notificationTime ?? 'Vrijeme obavijesti',
+              loc.notificationTime ?? 'Notification time period',
               true,
               null,
               child: GestureDetector(
-                onTap: () => _pickTime(true),
-                child: _timeBox('${start.format(context)} - ${end.format(context)}'),
+                onTap: notificationsEnabled ? _pickTimeRange : null,
+                child: _timeBox('${from.format(context)} - ${to.format(context)}'),
               ),
+              enabled: notificationsEnabled,
             ),
             const SizedBox(height: 16),
             _settingRow(
-              loc.geoNotifications ?? 'Lokacijsko obavještavanje',
+              loc.geoNotifications ?? 'Location-based notifications',
               geoEnabled,
-              (v) => setState(() => geoEnabled = v),
+              notificationsEnabled
+                  ? (v) {
+                      setState(() {
+                        geoEnabled = v;
+                      });
+                      _saveSettings();
+                    }
+                  : null,
               activeColor: Colors.orange,
-            ),
-            const SizedBox(height: 16),
-            _settingRow(
-              loc.eventReminders ?? 'Podsjetnici na lajkane događaje',
-              eventReminders,
-              (v) => setState(() => eventReminders = v),
-              activeColor: Colors.orange,
-            ),
-            const SizedBox(height: 32),
-            Text(
-              loc.notifyMeAbout ?? 'OBAVIJESTI ME O:',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF484751), letterSpacing: 1.1),
-            ),
-            const SizedBox(height: 12),
-            _searchBox(),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 12,
-              runSpacing: 8,
-              children: topics.map((t) => _chip(t)).toList(),
+              enabled: notificationsEnabled,
             ),
           ],
         ),
@@ -104,19 +321,29 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     );
   }
 
-  Widget _settingRow(String label, bool value, ValueChanged<bool>? onChanged, {Widget? child, Color activeColor = Colors.grey}) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(child: Text(label, style: const TextStyle(fontSize: 16, color: Colors.black54))),
-        if (child != null) child,
-        if (onChanged != null)
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: activeColor,
-          ),
-      ],
+  Widget _settingRow(
+    String label,
+    bool value,
+    ValueChanged<bool>? onChanged, {
+    Widget? child,
+    Color activeColor = Colors.grey,
+    bool enabled = true,
+  }) {
+    return Opacity(
+      opacity: enabled ? 1.0 : 0.5,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(child: Text(label, style: const TextStyle(fontSize: 16, color: Colors.black54))),
+          if (child != null) child,
+          if (onChanged != null)
+            Switch(
+              value: value,
+              onChanged: enabled ? onChanged : null,
+              activeColor: activeColor,
+            ),
+        ],
+      ),
     );
   }
 
@@ -124,38 +351,16 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.grey.shade300,
+        color: notificationsEnabled ? Colors.grey.shade300 : Colors.grey.shade200,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Text(text, style: const TextStyle(fontSize: 16, color: Colors.black54)),
-    );
-  }
-
-  Widget _searchBox() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: const TextField(
-        decoration: InputDecoration(
-          icon: Icon(Icons.search),
-          border: InputBorder.none,
-          hintText: '',
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 16,
+          color: notificationsEnabled ? Colors.black54 : Colors.black38,
         ),
       ),
-    );
-  }
-
-  Widget _chip(String label) {
-    return Chip(
-      label: Text(label, style: const TextStyle(color: Color(0xFF368564), fontWeight: FontWeight.w600, letterSpacing: 0.5)),
-      backgroundColor: const Color(0xFFE9FBF2),
-      deleteIcon: const Icon(Icons.close, size: 18, color: Color(0xFF368564)),
-      onDeleted: () => setState(() => topics.remove(label)),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
     );
   }
 }

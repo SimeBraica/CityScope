@@ -32,6 +32,11 @@
             android:value="2" />
         <meta-data android:name="com.google.android.geo.API_KEY"
                    android:value="AIzaSyAk8EgixUGGwE2U6d3-COqq7jtxP1Uxk3U"/>
+        <meta-data
+            android:name="firebase_messaging_analytics_enabled"
+            android:value="true" />
+
+                   
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

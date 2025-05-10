@@ -67,5 +67,7 @@
   "notificationTime": "Vrijeme obavijesti",
   "geoNotifications": "Lokacijsko obavještavanje",
   "eventReminders": "Podsjetnici na lajkane događaje",
-  "notifyMeAbout": "OBAVIJEST ME O:"
+  "notifyMeAbout": "OBAVIJEST ME O:",
+  "selectFromTime": "Vrijeme OD",
+  "selectToTime": "Vrijeme DO"
 } 
