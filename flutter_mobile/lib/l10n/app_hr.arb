@@ -62,5 +62,10 @@
   "allFoodSelected": "Odabrane su sve kuhinje",
   "allCulturesSelected": "Odabrane su sve kulturološke lokacije",
   "allAttractionsSelected": "Odabrane su sve atrakcije",
-  "allHobbiesSelected": "Odabrani su svi hobiji"
+  "allHobbiesSelected": "Odabrani su svi hobiji",
+  "enableNotifications": "Uključi obavijesti",
+  "notificationTime": "Vrijeme obavijesti",
+  "geoNotifications": "Lokacijsko obavještavanje",
+  "eventReminders": "Podsjetnici na lajkane događaje",
+  "notifyMeAbout": "OBAVIJEST ME O:"
 } 

@@ -3,12 +3,19 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_mobile/features/auth/presentation/pages/login/login.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'l10n/l10n.dart';
 import 'core/locale_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Ovdje možeš obraditi poruke kada aplikacija nije aktivna
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());
 }
 

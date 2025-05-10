@@ -62,5 +62,10 @@
   "allFoodSelected": "All kitchens have been selected",
   "allCulturesSelected": "All cultural places have been selected",
   "allAttractionsSelected": "All attractions have been selected",
-  "allHobbiesSelected": "All hobbies have been selected"
+  "allHobbiesSelected": "All hobbies have been selected",
+  "enableNotifications": "Enable notifications",
+  "notificationTime": "Time period for notifications",
+  "geoNotifications": "Location based notifications",
+  "eventReminders": "Remind me of liked events",
+  "notifyMeAbout": "REMIND ME ABOUT:"
 } 

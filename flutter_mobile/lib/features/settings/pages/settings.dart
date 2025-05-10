@@ -6,6 +6,7 @@ import 'package:flutter_mobile/features/settings/pages/privacy.dart';
 import 'package:flutter_mobile/core/locale_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_mobile/features/settings/pages/interests.dart';
+import 'package:flutter_mobile/features/settings/pages/notification.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -84,7 +85,11 @@ class SettingsPage extends StatelessWidget {
                         MaterialPageRoute(builder: (_) => const InterestsPage()),
                       );
                     }),
-                    _SettingsTile(title: AppLocalizations.of(context)!.notifications, onTap: () {}),
+                    _SettingsTile(title: AppLocalizations.of(context)!.notifications, onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const NotificationSettingsPage()),
+                      );
+                    }),
                     _SettingsTile(title: AppLocalizations.of(context)!.language, onTap: () {
                       showDialog(
                         context: context,
