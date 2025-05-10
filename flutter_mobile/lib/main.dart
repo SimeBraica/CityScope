@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_mobile/config/theme/app_themes.dart';
-import 'package:flutter_mobile/features/auth/presentation/bloc/loggedInUser/remote/remote_logged_user_bloc.dart';
-import 'package:flutter_mobile/features/auth/presentation/bloc/loggedInUser/remote/remote_logged_user_event.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_mobile/features/auth/presentation/pages/login/login.dart';
-import 'package:flutter_mobile/injection_container.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await initializeDependencies();
+  await Firebase.initializeApp();
   runApp(const MyApp());
 }
 
@@ -17,17 +13,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<RemoteLoggedUserBloc>(
-      create:
-          (context) =>
-              sl()..add(
-                const LoginUser(email: "test@test.com", password: "test"),
-              ),
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: theme(),
-        home: const Login(),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: Login(),
     );
   }
 }
