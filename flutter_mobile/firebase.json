@@ -14,5 +14,19 @@
         "firebase-debug.*.log"
       ]
     }
-  ]
-} 
+  ],
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  },
+  "app-distribution": {
+    "android": {
+      "app": "1:16231218438:android:3e246bb3bd0e58746a3287",
+      "testers": "tivanovic21@student.foi.hr"
+    }
+  }
+}

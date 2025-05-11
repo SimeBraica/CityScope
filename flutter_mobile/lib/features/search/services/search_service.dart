@@ -629,7 +629,6 @@ class SearchService {
         return "Zanimljiva lokacija u Hrvatskoj vrijedna posjeta";
       }
     } else {
-      // Engleske verzije
       if (category == 'culture' || category == 'attractions') {
         if (subcategory == 'church' || subcategory == 'place_of_worship') {
           return "Significant religious site in Croatian cultural heritage";

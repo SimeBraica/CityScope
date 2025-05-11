@@ -47,7 +47,6 @@ class _RegisterPageState extends State<RegisterPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
-      // Spremi korisnika u Firestore
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         await FirebaseFirestore.instance.collection('users').doc(user.uid).set({

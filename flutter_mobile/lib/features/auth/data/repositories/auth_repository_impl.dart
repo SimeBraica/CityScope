@@ -30,7 +30,6 @@ class AuthRepositoryImpl implements AuthRepository {
         return Left(ServerFailure('Login failed, please try again.'));
       }
       
-      // Pokreni praćenje lokacije nakon uspješne prijave
       _locationService.startLocationTracking(
         languageCode: Intl.getCurrentLocale(),
       );
@@ -52,7 +51,6 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     try {
-      // Zaustavi praćenje lokacije pri odjavi
       _locationService.stopLocationTracking();
       
       await _firebaseAuth.signOut();
