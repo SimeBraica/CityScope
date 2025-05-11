@@ -92,5 +92,8 @@
   "refreshPlaces": "Refresh places",
   "loadingNearbyPlaces": "Loading places...",
   "noPlacesFound": "No places found at this location",
-  "errorLoadingPlaceDetails": "Error loading place details"
+  "errorLoadingPlaceDetails": "Error loading place details",
+  "readMoreOnWikipedia": "Read more on Wikipedia",
+  "cannotOpenWikipedia": "Cannot open Wikipedia article",
+  "wikipediaInfo": "Information from Wikipedia"
 } 

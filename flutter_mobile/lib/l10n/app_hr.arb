@@ -92,5 +92,8 @@
   "refreshPlaces": "Osvježi lokacije",
   "loadingNearbyPlaces": "Učitavanje lokacija...",
   "noPlacesFound": "Nema pronađenih lokacija na ovoj poziciji",
-  "errorLoadingPlaceDetails": "Greška pri učitavanju detalja lokacije"
+  "errorLoadingPlaceDetails": "Greška pri učitavanju detalja lokacije",
+  "readMoreOnWikipedia": "Pročitaj više na Wikipediji",
+  "cannotOpenWikipedia": "Nije moguće otvoriti Wikipedia članak",
+  "wikipediaInfo": "Informacije s Wikipedije"
 } 

@@ -23,6 +23,8 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
   Map<String, dynamic>? _placeDetails;
   String? _fact;
   bool _hasDetailedInfo = false;
+  Map<String, String?>? _wikipediaInfo;
+  bool _isLoadingWikipedia = false;
   
   @override
   void initState() {
@@ -42,16 +44,44 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
         setState(() {
           _placeDetails = details;
           
-          // Provjeri ima li mjesto opširniji opis (editorial_summary)
           _hasDetailedInfo = details['editorial_summary'] != null || 
                             (details['reviews'] != null && (details['reviews'] as List).isNotEmpty);
-                            
-          // Ovdje bi se mogla dodati logika za dohvaćanje činjenice o mjestu
-          // Za kulturna mjesta moglo bi se koristiti Wikipedia API ili drugi izvor
-          if (widget.place.category == 'culture' || 
-             (details['types'] != null && 
-              (details['types'] as List<dynamic>).contains('tourist_attraction'))) {
-            _fact = "najveća hrvatska sakralna građevina i jedan od najvrjednijih spomenika Hrvatske kulturne baštine";
+
+          final bool isCulturalObject = 
+              widget.place.category == 'culture' || 
+              widget.place.category == 'attractions' ||
+              widget.place.subcategory == 'church' ||
+              widget.place.subcategory == 'place_of_worship' ||
+              widget.place.subcategory == 'museum' ||
+              widget.place.subcategory == 'art_gallery' ||
+              widget.place.subcategory == 'library' ||
+              widget.place.subcategory == 'tourist_attraction' ||
+              (details['types'] != null && 
+               ((details['types'] as List<dynamic>).contains('church') ||
+                (details['types'] as List<dynamic>).contains('place_of_worship') ||
+                (details['types'] as List<dynamic>).contains('museum') ||
+                (details['types'] as List<dynamic>).contains('art_gallery') || 
+                (details['types'] as List<dynamic>).contains('library') ||
+                (details['types'] as List<dynamic>).contains('tourist_attraction')));
+
+          if (isCulturalObject) {
+            if (widget.place.subcategory == 'church' || 
+                widget.place.subcategory == 'place_of_worship' ||
+                (details['types'] != null && 
+                ((details['types'] as List<dynamic>).contains('church') ||
+                 (details['types'] as List<dynamic>).contains('place_of_worship')))) {
+              _fact = "Značajan sakralni objekt u hrvatskoj kulturnoj baštini";
+            } else if (widget.place.subcategory == 'museum' ||
+                (details['types'] != null && (details['types'] as List<dynamic>).contains('museum'))) {
+              _fact = "Muzej s vrijednom zbirkom eksponata koji predstavljaju kulturnu baštinu";
+            } else if (widget.place.subcategory == 'art_gallery' ||
+                (details['types'] != null && (details['types'] as List<dynamic>).contains('art_gallery'))) {
+              _fact = "Galerija koja predstavlja važna umjetnička djela hrvatskih i stranih autora";
+            } else {
+              _fact = "Značajan objekt hrvatske kulturne baštine";
+            }
+            
+            _loadWikipediaInfo();
           }
         });
       }
@@ -60,6 +90,60 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
     } finally {
       setState(() {
         _isLoading = false;
+      });
+    }
+  }
+  
+  Future<void> _loadWikipediaInfo() async {
+    final bool isCulturalObject = 
+        widget.place.category == 'culture' || 
+        widget.place.category == 'attractions' ||
+        widget.place.subcategory == 'church' ||
+        widget.place.subcategory == 'place_of_worship' ||
+        widget.place.subcategory == 'museum' ||
+        widget.place.subcategory == 'art_gallery' ||
+        widget.place.subcategory == 'library' ||
+        widget.place.subcategory == 'tourist_attraction' ||
+        (_placeDetails != null && _placeDetails!['types'] != null && 
+          ((_placeDetails!['types'] as List<dynamic>).contains('church') ||
+           (_placeDetails!['types'] as List<dynamic>).contains('place_of_worship') ||
+           (_placeDetails!['types'] as List<dynamic>).contains('museum') ||
+           (_placeDetails!['types'] as List<dynamic>).contains('art_gallery') ||
+           (_placeDetails!['types'] as List<dynamic>).contains('library') ||
+           (_placeDetails!['types'] as List<dynamic>).contains('tourist_attraction')));
+    
+    if (!isCulturalObject) {
+      print('Nije kulturni objekt: ${widget.place.name} (kategorija: ${widget.place.category}, potkategorija: ${widget.place.subcategory})');
+      return;
+    }
+    
+    print('Pokretanje Wikipedia pretrage za: ${widget.place.name}');
+    
+    setState(() {
+      _isLoadingWikipedia = true;
+    });
+    
+    try {
+      final locale = Localizations.localeOf(context).languageCode;
+      final info = await _searchService.getWikipediaInfo(widget.place.name, locale);
+      
+      if (info.containsKey('error')) {
+        print('Nije moguće dohvatiti Wikipedia podatke za ${widget.place.name}: ${info['error']}');
+      } else {
+        print('Uspješno dohvaćeni Wikipedia podaci za ${widget.place.name}');
+        setState(() {
+          _wikipediaInfo = info;
+          
+          if (info['extract'] != null && info['extract']!.isNotEmpty) {
+            _fact = info['extract'];
+          }
+        });
+      }
+    } catch (e) {
+      print('Greška pri dohvaćanju Wikipedia podataka za ${widget.place.name}: $e');
+    } finally {
+      setState(() {
+        _isLoadingWikipedia = false;
       });
     }
   }
@@ -83,6 +167,8 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
             children: [
               _buildPlaceInfo(),
               if (_fact != null) _buildFactSection(),
+              if (_wikipediaInfo != null && _wikipediaInfo!['articleUrl'] != null)
+                _buildWikipediaLink(),
               Padding(
                 padding: const EdgeInsets.all(24.0),
                 child: SizedBox(
@@ -119,11 +205,19 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
   }
   
   Widget _buildAppBar() {
-    final String headerImageUrl = _placeDetails != null && 
-                               _placeDetails!['photos'] != null && 
-                               (_placeDetails!['photos'] as List).isNotEmpty
-      ? 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${_placeDetails!['photos'][0]['photo_reference']}&key=${_searchService.apiKey}'
-      : widget.place.imageUrl ?? '';
+    String headerImageUrl = '';
+    
+    if ((widget.place.category == 'culture' || widget.place.category == 'attractions') && 
+        _wikipediaInfo != null && 
+        _wikipediaInfo!['imageUrl'] != null) {
+      headerImageUrl = _wikipediaInfo!['imageUrl']!;
+    } else if (_placeDetails != null && 
+               _placeDetails!['photos'] != null && 
+               (_placeDetails!['photos'] as List).isNotEmpty) {
+      headerImageUrl = 'https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${_placeDetails!['photos'][0]['photo_reference']}&key=${_searchService.apiKey}';
+    } else if (widget.place.imageUrl != null) {
+      headerImageUrl = widget.place.imageUrl!;
+    }
       
     return SliverAppBar(
       expandedHeight: 250,
@@ -319,13 +413,29 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            AppLocalizations.of(context)?.fact ?? 'ČINJENICA',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.grey.shade600,
-            ),
+          Row(
+            children: [
+              Text(
+                AppLocalizations.of(context)?.fact ?? 'ČINJENICA',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              if (_isLoadingWikipedia)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 8),
           Text(
@@ -338,6 +448,85 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
         ],
       ),
     );
+  }
+  
+  Widget _buildWikipediaLink() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+      child: InkWell(
+        onTap: () => _launchWikipediaArticle(),
+        child: Row(
+          children: [
+            Image.asset(
+              'assets/images/wikipedia.png',
+              height: 24,
+              width: 24,
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                AppLocalizations.of(context)?.readMoreOnWikipedia ?? 'Pročitaj više na Wikipediji',
+                style: TextStyle(
+                  color: Colors.blue.shade700,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Future<void> _launchWikipediaArticle() async {
+    if (_wikipediaInfo == null || _wikipediaInfo!['articleUrl'] == null) return;
+    
+    final url = Uri.parse(_wikipediaInfo!['articleUrl']!);
+    
+    try {
+      print('Pokušavam otvoriti URL: $url');
+      if (await canLaunchUrl(url)) {
+        final bool success = await launchUrl(
+          url, 
+          mode: LaunchMode.externalApplication,
+          webViewConfiguration: const WebViewConfiguration(
+            enableJavaScript: true,
+            enableDomStorage: true,
+          ),
+        );
+        
+        if (!success) {
+          print('Neuspješno otvaranje URL-a: $url');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocalizations.of(context)?.cannotOpenWikipedia ?? 'Nije moguće otvoriti Wikipedia članak'),
+              ),
+            );
+          }
+        } else {
+          print('Uspješno pokrenut URL: $url');
+        }
+      } else {
+        print('Nije moguće otvoriti URL: $url');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context)?.cannotOpenWikipedia ?? 'Nije moguće otvoriti Wikipedia članak'),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print('Greška pri otvaranju URL-a: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${AppLocalizations.of(context)?.cannotOpenWikipedia}: $e'),
+          ),
+        );
+      }
+    }
   }
   
   void _showFullDetails() {
@@ -382,7 +571,51 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    if (_placeDetails!['editorial_summary'] != null && 
+                    if (_wikipediaInfo != null && _wikipediaInfo!['extract'] != null) ...[
+                      Row(
+                        children: [
+                          Image.asset(
+                            'assets/images/wikipedia.png',
+                            height: 20,
+                            width: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            AppLocalizations.of(context)?.wikipediaInfo ?? 'Informacije s Wikipedije',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        _wikipediaInfo!['extract']!,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      if (_wikipediaInfo!['articleUrl'] != null) ...[
+                        const SizedBox(height: 12),
+                        InkWell(
+                          onTap: () => _launchWikipediaArticle(),
+                          child: Text(
+                            AppLocalizations.of(context)?.readMoreOnWikipedia ?? 'Pročitaj više na Wikipediji',
+                            style: TextStyle(
+                              color: Colors.blue.shade700,
+                              decoration: TextDecoration.underline,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 20),
+                      const Divider(),
+                      const SizedBox(height: 16),
+                    ] else if (_placeDetails!['editorial_summary'] != null && 
                         _placeDetails!['editorial_summary']['overview'] != null) ...[
                       Text(
                         _placeDetails!['editorial_summary']['overview'],

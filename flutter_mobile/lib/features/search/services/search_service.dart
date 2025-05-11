@@ -241,7 +241,7 @@ class SearchService {
   String _getTranslatedCuisine(String? cuisineType) {
     switch (cuisineType) {
       case 'asian':
-        return 'asian chinese japanese thai vietnamese';
+        return 'asian chinese japanese thai vietnamese sushi ramen';
       case 'italian':
         return 'italian pizza pasta';
       case 'fastfood':
@@ -249,7 +249,7 @@ class SearchService {
       case 'american':
         return 'american burger mcdonalds kfc';
       case 'indian':
-        return 'indian curry tandoori';
+        return 'indian curry tandoori butten chicken';
       case 'local':
         return 'local traditional croatian domaća kuhinja specijaliteti lokalna hrana gdje lokalci jedu';
       default:
@@ -305,6 +305,132 @@ class SearchService {
     } catch (e) {
       print('Greška pri spremanju povijesti pretrage: $e');
     }
+  }
+
+  Future<Map<String, String?>> getWikipediaInfo(String placeName, String language) async {
+    final String wikipediaLang = language == 'hr' ? 'hr' : 'en';
+    
+    // Priprema naziva za pretragu - za različite tipove objekata pokušaj različite varijante naziva
+    String searchName = placeName;
+    List<String> simplifiedNames = [searchName];
+    
+    print('Pretraga Wikipedije za "$placeName" (jezik: $wikipediaLang)');
+    
+    // Specifični slučajevi za poznate objekte
+    if (placeName.toLowerCase().contains('zagreb') && 
+        (placeName.toLowerCase().contains('katedrala') || placeName.toLowerCase().contains('cathedral'))) {
+      if (wikipediaLang == 'hr') {
+        simplifiedNames.addAll([
+          'Zagrebačka katedrala',
+          'Katedrala Uznesenja Blažene Djevice Marije i svetih Stjepana i Ladislava',
+          'Katedrala Zagreb'
+        ]);
+      } else {
+        simplifiedNames.addAll([
+          'Zagreb Cathedral', 
+          'Cathedral of Zagreb',
+          'Cathedral of the Assumption of the Blessed Virgin Mary'
+        ]);
+      }
+    }
+    
+    if (isCulturalPlace(placeName)) {
+      final prefixPattern = RegExp(r'^(crkva|katedrala|bazilika|muzej|galerija|museum|cathedral|basilica|gallery|church)\s+',
+          caseSensitive: false);
+      if (prefixPattern.hasMatch(placeName.toLowerCase())) {
+        final withoutPrefix = placeName.replaceFirst(prefixPattern, '');
+        simplifiedNames.add(withoutPrefix);
+      }
+      
+      if (placeName.toLowerCase().contains('mark') || placeName.toLowerCase().contains('marc')) {
+        if (wikipediaLang == 'hr' && !placeName.toLowerCase().contains('crkva')) {
+          simplifiedNames.add('Crkva svetog Marka');
+        } else if (wikipediaLang == 'en' && !placeName.toLowerCase().contains('church')) {
+          simplifiedNames.add('Saint Mark\'s Church');
+        }
+      }
+      
+      if (placeName.toLowerCase().contains('kated') || placeName.toLowerCase().contains('cathe')) {
+        if (wikipediaLang == 'hr' && !placeName.toLowerCase().contains('katedrala')) {
+          simplifiedNames.add('Katedrala $placeName');
+        } else if (wikipediaLang == 'en' && !placeName.toLowerCase().contains('cathedral')) {
+          simplifiedNames.add('Cathedral of $placeName');
+          simplifiedNames.add('$placeName Cathedral');
+        }
+      }
+      
+      if (placeName.toLowerCase().contains('muze') || placeName.toLowerCase().contains('museum')) {
+        if (wikipediaLang == 'hr' && !placeName.toLowerCase().contains('muzej')) {
+          simplifiedNames.add('Muzej $placeName');
+        } else if (wikipediaLang == 'en' && !placeName.toLowerCase().contains('museum')) {
+          simplifiedNames.add('$placeName Museum');
+          simplifiedNames.add('Museum of $placeName');
+        }
+      }
+    }
+    
+    simplifiedNames = simplifiedNames.toSet().toList();
+    
+    print('Varijante naziva za pretragu: $simplifiedNames');
+    
+    for (final name in simplifiedNames) {
+      try {
+        final Uri uri = Uri.https('$wikipediaLang.wikipedia.org', '/w/api.php', {
+          'action': 'query',
+          'format': 'json',
+          'prop': 'extracts|pageimages|info',
+          'exintro': 'true',
+          'explaintext': 'true',
+          'titles': name,
+          'piprop': 'original',
+          'inprop': 'url',
+        });
+        
+        final response = await http.get(uri);
+        
+        if (response.statusCode == 200) {
+          final data = json.decode(response.body);
+          final pages = data['query']['pages'];
+          
+          if (pages != null) {
+            final String firstPageId = pages.keys.first;
+            
+            if (firstPageId != "-1") {
+              final page = pages[firstPageId];
+              print('Pronađen Wikipedia članak za naziv "$name": ${page['title']}');
+              return {
+                'title': page['title'],
+                'extract': page['extract'],
+                'imageUrl': page['original']?['source'],
+                'articleUrl': page['fullurl'],
+              };
+            }
+          }
+        }
+      } catch (e) {
+        print('Greška pri pozivu Wikipedia API-ja za naziv "$name": $e');
+      }
+    }
+    
+    print('Wikipedia API nije pronašao rezultate za naziv "$placeName" ni za jednu od varijanti');
+    return {'error': 'Podaci nisu dostupni'};
+  }
+  
+  bool isCulturalPlace(String name) {
+    final String lowerName = name.toLowerCase();
+    
+    return lowerName.contains('crkva') || 
+           lowerName.contains('church') ||
+           lowerName.contains('katedrala') ||
+           lowerName.contains('cathedral') ||
+           lowerName.contains('bazilika') ||
+           lowerName.contains('basilica') ||
+           lowerName.contains('muzej') ||
+           lowerName.contains('museum') ||
+           lowerName.contains('galerija') ||
+           lowerName.contains('gallery') ||
+           lowerName.contains('knjižnica') ||
+           lowerName.contains('library');
   }
 
   Set<String> _getCategorySubcategories(String category, Set<String> subcategories) {
