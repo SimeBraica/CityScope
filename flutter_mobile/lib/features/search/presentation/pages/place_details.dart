@@ -25,6 +25,7 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
   bool _hasDetailedInfo = false;
   Map<String, String?>? _wikipediaInfo;
   bool _isLoadingWikipedia = false;
+  bool _isLoadingAiFact = false;
   
   @override
   void initState() {
@@ -65,23 +66,9 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
                 (details['types'] as List<dynamic>).contains('tourist_attraction')));
 
           if (isCulturalObject) {
-            if (widget.place.subcategory == 'church' || 
-                widget.place.subcategory == 'place_of_worship' ||
-                (details['types'] != null && 
-                ((details['types'] as List<dynamic>).contains('church') ||
-                 (details['types'] as List<dynamic>).contains('place_of_worship')))) {
-              _fact = "Značajan sakralni objekt u hrvatskoj kulturnoj baštini";
-            } else if (widget.place.subcategory == 'museum' ||
-                (details['types'] != null && (details['types'] as List<dynamic>).contains('museum'))) {
-              _fact = "Muzej s vrijednom zbirkom eksponata koji predstavljaju kulturnu baštinu";
-            } else if (widget.place.subcategory == 'art_gallery' ||
-                (details['types'] != null && (details['types'] as List<dynamic>).contains('art_gallery'))) {
-              _fact = "Galerija koja predstavlja važna umjetnička djela hrvatskih i stranih autora";
-            } else {
-              _fact = "Značajan objekt hrvatske kulturne baštine";
-            }
-            
             _loadWikipediaInfo();
+          } else {
+            _generateAiFact();
           }
         });
       }
@@ -91,6 +78,43 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+  
+  Future<void> _generateAiFact() async {
+    print('Započinjem generiranje AI činjenice za: ${widget.place.name}');
+    
+    setState(() {
+      _isLoadingAiFact = true;
+    });
+    
+    try {
+      final locale = Localizations.localeOf(context).languageCode;
+      final fact = await _searchService.getAiFunFact(
+        widget.place.name,
+        widget.place.category,
+        widget.place.subcategory,
+        _wikipediaInfo,
+        _placeDetails,
+        locale
+      );
+      
+      print('Dobivena AI činjenica: $fact');
+      
+      if (mounted) {
+        setState(() {
+          _fact = fact;
+          _isLoadingAiFact = false;
+        });
+      }
+    } catch (e) {
+      print('Greška pri generiranju AI činjenice: $e');
+      if (mounted) {
+        setState(() {
+          _fact = _getDefaultFactLocally();
+          _isLoadingAiFact = false;
+        });
+      }
     }
   }
   
@@ -133,18 +157,54 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
         print('Uspješno dohvaćeni Wikipedia podaci za ${widget.place.name}');
         setState(() {
           _wikipediaInfo = info;
-          
-          if (info['extract'] != null && info['extract']!.isNotEmpty) {
-            _fact = info['extract'];
-          }
         });
       }
+      
+      _generateAiFact();
+      
     } catch (e) {
       print('Greška pri dohvaćanju Wikipedia podataka za ${widget.place.name}: $e');
+      _generateAiFact();
     } finally {
       setState(() {
         _isLoadingWikipedia = false;
       });
+    }
+  }
+  
+  // Pomoćna metoda koja vraća lokalnu zadanu činjenicu ako AI ne uspije
+  String _getDefaultFactLocally() {
+    final locale = Localizations.localeOf(context).languageCode;
+    
+    if (locale == 'hr') {
+      if (widget.place.category == 'culture' || widget.place.category == 'attractions') {
+        if (widget.place.subcategory == 'church' || widget.place.subcategory == 'place_of_worship') {
+          return "Značajan sakralni objekt u hrvatskoj kulturnoj baštini";
+        } else if (widget.place.subcategory == 'museum') {
+          return "Muzej s vrijednom zbirkom eksponata koji predstavljaju kulturnu baštinu";
+        } else if (widget.place.subcategory == 'art_gallery') {
+          return "Galerija koja predstavlja važna umjetnička djela hrvatskih i stranih autora";
+        } else {
+          return "Značajan objekt hrvatske kulturne baštine";
+        }
+      } else {
+        return "Zanimljiva lokacija u Hrvatskoj vrijedna posjeta";
+      }
+    } else {
+      // Engleske verzije
+      if (widget.place.category == 'culture' || widget.place.category == 'attractions') {
+        if (widget.place.subcategory == 'church' || widget.place.subcategory == 'place_of_worship') {
+          return "Significant religious site in Croatian cultural heritage";
+        } else if (widget.place.subcategory == 'museum') {
+          return "Museum with a valuable collection of exhibits representing cultural heritage";
+        } else if (widget.place.subcategory == 'art_gallery') {
+          return "Gallery presenting important artworks by Croatian and international artists";
+        } else {
+          return "Significant site in Croatian cultural heritage";
+        }
+      } else {
+        return "An interesting location in Croatia worth visiting";
+      }
     }
   }
 
@@ -166,7 +226,7 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildPlaceInfo(),
-              if (_fact != null) _buildFactSection(),
+              if (_fact != null || _isLoadingAiFact) _buildFactSection(),
               if (_wikipediaInfo != null && _wikipediaInfo!['articleUrl'] != null)
                 _buildWikipediaLink(),
               Padding(
@@ -414,37 +474,80 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                AppLocalizations.of(context)?.fact ?? 'ČINJENICA',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade600,
-                ),
-              ),
-              if (_isLoadingWikipedia)
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: SizedBox(
-                    height: 16,
-                    width: 16,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
+              Row(
+                children: [
+                  Text(
+                    AppLocalizations.of(context)?.fact ?? 'ČINJENICA',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                       color: Colors.grey.shade600,
                     ),
+                  ),
+                  if (_isLoadingWikipedia || _isLoadingAiFact)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8.0),
+                      child: SizedBox(
+                        height: 16,
+                        width: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              if (_fact != null && !_isLoadingAiFact)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    children: [
+                      Text(
+                        'AI',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade800,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.auto_awesome,
+                        size: 12,
+                        color: Colors.blue.shade800,
+                      ),
+                    ],
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            _fact!,
-            style: const TextStyle(
-              fontSize: 15,
-              color: Colors.black87,
+          const SizedBox(height: 12),
+          if (_fact != null)
+            Text(
+              _fact!,
+              style: const TextStyle(
+                fontSize: 15,
+                color: Colors.black87,
+              ),
+            )
+          else if (!_isLoadingWikipedia && !_isLoadingAiFact)
+            Text(
+              Localizations.localeOf(context).languageCode == 'hr'
+                  ? 'Učitavanje zanimljive činjenice...'
+                  : 'Loading interesting fact...',
+              style: TextStyle(
+                fontSize: 15,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey.shade600,
+              ),
             ),
-          ),
         ],
       ),
     );

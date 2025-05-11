@@ -463,4 +463,185 @@ class SearchService {
     
     return result;
   }
+
+  Future<String> getAiFunFact(String placeName, String? category, String? subcategory, Map<String, String?>? wikipediaInfo, Map<String, dynamic>? placeDetails, String languageCode) async {
+    try {
+      String promptBase = languageCode == 'hr' 
+        ? "Generiraj kratku zanimljivu činjenicu (jedna rečenica) o mjestu: $placeName. Maksimalno 150 znakova. ODGOVORI ISKLJUČIVO NA HRVATSKOM JEZIKU."
+        : "Generate a short one sentence fun fact about $placeName. Maximum 150 characters. ANSWER IN ENGLISH ONLY.";
+      
+      // if (category != null) {
+      //   promptBase += languageCode == 'hr' 
+      //     ? " Kategorija: $category." 
+      //     : " Category: $category.";
+      // }
+      
+      // if (subcategory != null) {
+      //   promptBase += languageCode == 'hr' 
+      //     ? " Potkategorija: $subcategory." 
+      //     : " Subcategory: $subcategory.";
+      // }
+      
+      // if (wikipediaInfo != null && wikipediaInfo['extract'] != null) {
+      //   promptBase += languageCode == 'hr' 
+      //     ? " Informacije: ${wikipediaInfo['extract']}" 
+      //     : " Information: ${wikipediaInfo['extract']}";
+      // }
+      
+      // if (placeDetails != null && placeDetails['editorial_summary'] != null && placeDetails['editorial_summary']['overview'] != null) {
+      //   promptBase += languageCode == 'hr' 
+      //     ? " Dodatne informacije: ${placeDetails['editorial_summary']['overview']}" 
+      //     : " Additional information: ${placeDetails['editorial_summary']['overview']}";
+      // }
+      
+      print('AI prompt: $promptBase');
+      
+      final response = await http.post(
+        Uri.parse('https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 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',
+        },
+        body: jsonEncode({
+          'inputs': promptBase,
+          'parameters': {
+            'max_new_tokens': 150,
+            'temperature': 0.9,
+            'top_p': 0.95,
+            'return_full_text': false
+          }
+        }),
+      );
+      
+      print('AI API odgovor status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final String responseBody = response.body;
+        print('AI API odgovor tijelo: $responseBody');
+        
+        try {
+          final jsonResponse = jsonDecode(responseBody);
+          
+          String funFact = "";
+          
+          if (jsonResponse is List && jsonResponse.isNotEmpty) {
+            if (jsonResponse[0] is Map && jsonResponse[0].containsKey('generated_text')) {
+              funFact = jsonResponse[0]['generated_text'] ?? '';
+            } else if (jsonResponse[0] is String) {
+              funFact = jsonResponse[0];
+            }
+          } else if (jsonResponse is Map) {
+            if (jsonResponse.containsKey('generated_text')) {
+              funFact = jsonResponse['generated_text'] ?? '';
+            }
+          }
+          
+          funFact = funFact.trim();
+          
+          if (languageCode == 'hr') {
+            final RegExp hrPattern = RegExp(r'(?:[A-ZŠĐČĆŽ][a-zšđčćž\d\s,.!?:;]+?[.!?])');
+            final Iterable<RegExpMatch> matches = hrPattern.allMatches(funFact);
+            
+            if (matches.isNotEmpty) {
+              String bestMatch = '';
+              for (var match in matches) {
+                String candidate = match.group(0) ?? '';
+                if (candidate.length > bestMatch.length && 
+                    (candidate.contains('č') || candidate.contains('ć') || 
+                     candidate.contains('ž') || candidate.contains('š') || 
+                     candidate.contains('đ'))) {
+                  bestMatch = candidate;
+                }
+              }
+              
+              if (bestMatch.isNotEmpty) {
+                funFact = bestMatch;
+              }
+            }
+          } else {
+            final RegExp enPattern = RegExp(r'(?:fact about [^:.]*:?\s*)([A-Z][^.]*\.)');
+            final match = enPattern.firstMatch(funFact);
+            if (match != null && match.groupCount >= 1) {
+              funFact = match.group(1) ?? funFact;
+            }
+          }
+          
+          final promptWords = promptBase.split(' ').where((word) => word.length > 5).toList();
+          for (final word in promptWords) {
+            if (funFact.startsWith(word)) {
+              final index = funFact.indexOf('.');
+              if (index > 0) {
+                funFact = funFact.substring(index + 1).trim();
+              }
+              break;
+            }
+          }
+          
+          final responsePattern = RegExp(r'^\s*(AI|Assistant|Model):\s*', caseSensitive: false);
+          funFact = funFact.replaceFirst(responsePattern, '');
+          
+          final RegExp backToPattern = RegExp(r'Back to (answers|questions)');
+          final backMatch = backToPattern.firstMatch(funFact);
+          if (backMatch != null) {
+            funFact = funFact.substring(0, backMatch.start).trim();
+          }
+          
+          if (funFact.contains("Translation:")) {
+            funFact = funFact.substring(0, funFact.indexOf("Translation:")).trim();
+          }
+          
+          print('Obrađeni AI odgovor: "$funFact"');
+          
+          if (funFact.isEmpty) {
+            print('Odgovor je prazan vraćamo zadani tekst.');
+            return _getDefaultFact(placeName, category, subcategory, languageCode);
+          }
+          
+          return funFact;
+        } catch (e) {
+          print('Greška pri parsiranju JSON odgovora: $e');
+          return _getDefaultFact(placeName, category, subcategory, languageCode);
+        }
+      } else {
+        print('Greška pri generiranju AI činjenice: ${response.statusCode}, odgovor: ${response.body}');
+        return _getDefaultFact(placeName, category, subcategory, languageCode);
+      }
+    } catch (e) {
+      print('Iznimka pri generiranju AI činjenice: $e');
+      return _getDefaultFact(placeName, category, subcategory, languageCode);
+    }
+  }
+  
+  String _getDefaultFact(String placeName, String? category, String? subcategory, String languageCode) {
+    if (languageCode == 'hr') {
+      if (category == 'culture' || category == 'attractions') {
+        if (subcategory == 'church' || subcategory == 'place_of_worship') {
+          return "Značajan sakralni objekt u hrvatskoj kulturnoj baštini";
+        } else if (subcategory == 'museum') {
+          return "Muzej s vrijednom zbirkom eksponata koji predstavljaju kulturnu baštinu";
+        } else if (subcategory == 'art_gallery') {
+          return "Galerija koja predstavlja važna umjetnička djela hrvatskih i stranih autora";
+        } else {
+          return "Značajan objekt hrvatske kulturne baštine";
+        }
+      } else {
+        return "Zanimljiva lokacija u Hrvatskoj vrijedna posjeta";
+      }
+    } else {
+      // Engleske verzije
+      if (category == 'culture' || category == 'attractions') {
+        if (subcategory == 'church' || subcategory == 'place_of_worship') {
+          return "Significant religious site in Croatian cultural heritage";
+        } else if (subcategory == 'museum') {
+          return "Museum with a valuable collection of exhibits representing cultural heritage";
+        } else if (subcategory == 'art_gallery') {
+          return "Gallery presenting important artworks by Croatian and international artists";
+        } else {
+          return "Significant site in Croatian cultural heritage";
+        }
+      } else {
+        return "An interesting location in Croatia worth visiting";
+      }
+    }
+  }
 } 
