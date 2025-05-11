@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "16231218438",
+    "project_id": "cityscope-9e5bf",
+    "storage_bucket": "cityscope-9e5bf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16231218438:android:3e246bb3bd0e58746a3287",
+        "android_client_info": {
+          "package_name": "com.CityScope"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "16231218438-gpongdonurm621h9ku4vm8q0aofntrs5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.CityScope",
+            "certificate_hash": "c2bc956347884cfaf325d71def95e6181f0b7a73"
+          }
+        },
+        {
+          "client_id": "16231218438-7vbat4p03tlo4lbfpru9nqi15n5d835t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCD2fF0_Z83ULTvY28T6Xq4GD4TymYjwIM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "16231218438-7vbat4p03tlo4lbfpru9nqi15n5d835t.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "16231218438-jhvi1qhqb0o4c9pgpo72i8r3e99cni5h.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.cityscope"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
