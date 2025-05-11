@@ -215,7 +215,6 @@ class _SearchResultsPageState extends State<SearchResultsPage> {
       );
     }).toSet();
     
-    // Dodaj marker trenutne lokacije korisnika
     markers.add(
       Marker(
         markerId: const MarkerId('user_location'),

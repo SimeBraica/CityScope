@@ -38,7 +38,7 @@ class _LoginState extends State<Login> {
         setState(() {
           _isLoading = false;
         });
-        return; // korisnik je odustao
+        return; 
       }
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final credential = GoogleAuthProvider.credential(
@@ -53,7 +53,6 @@ class _LoginState extends State<Login> {
           'email': user.email,
           'authProvider': 'google',
         }, SetOptions(merge: true));
-        // Provjeri preference
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
         final prefs = userDoc.data()?['preferences'] as List?;
         if (prefs == null || prefs.isEmpty) {
@@ -97,7 +96,6 @@ class _LoginState extends State<Login> {
       );
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
-        // Provjeri preference
         final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
         final prefs = userDoc.data()?['preferences'] as List?;
         if (prefs == null || prefs.isEmpty) {

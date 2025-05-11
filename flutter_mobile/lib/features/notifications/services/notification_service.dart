@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_mobile/main.dart'; // Import za navigatorKey
+import 'package:flutter_mobile/main.dart'; 
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -15,21 +15,17 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
   
-  // Kontroler za stream notifikacija u aplikaciji
   final StreamController<Map<String, dynamic>> onNotificationSubject = 
       StreamController<Map<String, dynamic>>.broadcast();
   
-  // Stream koji klijenti mogu slušati za notifikacije
   Stream<Map<String, dynamic>> get onNotification => onNotificationSubject.stream;
 
   NotificationService._internal();
 
   Future<void> init() async {
-    // Za Android
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     
-    // Za iOS - bez deprecated onDidReceiveLocalNotification parametra
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -37,17 +33,14 @@ class NotificationService {
       requestSoundPermission: true,
     );
     
-    // Inicijaliziraj postavke
     final InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
       iOS: initializationSettingsIOS,
     );
 
-    // Postavi callback za notifikaciju odabira
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        // Ovdje možete obraditi kad korisnik klikne na notifikaciju
         print('Kliknuta notifikacija: ${response.payload}');
         
         if (response.payload != null) {
@@ -59,7 +52,6 @@ class NotificationService {
       },
     );
 
-    // Zatražimo dozvole za notifikacije na iOS-u
     if (Platform.isIOS) {
       await FirebaseMessaging.instance
           .setForegroundNotificationPresentationOptions(
@@ -78,10 +70,8 @@ class NotificationService {
           );
     }
     
-    // Za Android 13 i novije potrebno je zatražiti dozvolu (koristimo ispravan API)
     if (Platform.isAndroid) {
       try {
-        // requestPermission je zamijenjen s requestNotificationsPermission u novijim verzijama
         await flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>()
@@ -91,7 +81,6 @@ class NotificationService {
       }
     }
     
-    // Kreiraj kanale za notifikacije na Androidu
     if (Platform.isAndroid) {
       await flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
@@ -104,7 +93,6 @@ class NotificationService {
           ));
     }
     
-    // Postavi handler za Firebase poruke u prednjem planu
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print('Primljena poruka u prednjem planu: ${message.notification?.title}');
       
@@ -123,13 +111,10 @@ class NotificationService {
     required String body,
     String? payload,
   }) async {
-    // Prvo pokušaj prikazati kao in-app notifikaciju
     showInAppNotification(title: title, body: body, payload: payload);
     
-    // Generiraj jedinstveni ID za notifikaciju
     final int notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
     
-    // Pošalji i kao standardnu notifikaciju (za slučaj da je aplikacija u pozadini)
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'geo_notifications',
@@ -164,7 +149,6 @@ class NotificationService {
     }
   }
   
-  // Metoda koja prikazuje notifikaciju unutar aplikacije kao SnackBar ili drugi UI element
   void showInAppNotification({
     required String title,
     required String body,

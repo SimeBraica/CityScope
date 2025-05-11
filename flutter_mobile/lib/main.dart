@@ -27,7 +27,6 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  // Održava splash screen dok se sve ne inicijalizira
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   
   await EnvConfig.init();
@@ -45,7 +44,6 @@ void main() async {
   
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   
-  // Uklanja splash screen nakon inicijalizacije
   FlutterNativeSplash.remove();
   
   runApp(const MyApp());

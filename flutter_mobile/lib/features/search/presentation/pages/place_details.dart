@@ -436,7 +436,6 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
             ),
             const SizedBox(height: 24),
           ],
-          // Gumb za upute
           SizedBox(
             width: double.infinity,
             height: 48,
@@ -955,7 +954,6 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
     }
   }
   
-  // Metoda za otvaranje Google Maps s uputama
   Future<void> _openGoogleMapsDirections() async {
     final lat = widget.place.location.latitude;
     final lng = widget.place.location.longitude;

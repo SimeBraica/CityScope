@@ -2,8 +2,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class EnvConfig {
   static Map<String, String> _defaultValues = {
-    'GOOGLE_MAPS_API_KEY': 'AIzaSyAk8EgixUGGwE2U6d3-COqq7jtxP1Uxk3U',
-    'HUGGINGFACE_API_KEY': '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',
+    'GOOGLE_MAPS_API_KEY': '',
+    'HUGGINGFACE_API_KEY': '',
   };
   
   static Future<void> init() async {
