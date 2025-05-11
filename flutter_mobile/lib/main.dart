@@ -4,6 +4,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_mobile/features/auth/presentation/pages/login/login.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:io' show File, Platform;
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter_mobile/core/env_config.dart';
 import 'l10n/l10n.dart';
 import 'core/locale_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -15,6 +19,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await EnvConfig.init();
   await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MyApp());

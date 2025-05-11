@@ -172,7 +172,6 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
     }
   }
   
-  // Pomoćna metoda koja vraća lokalnu zadanu činjenicu ako AI ne uspije
   String _getDefaultFactLocally() {
     final locale = Localizations.localeOf(context).languageCode;
     
@@ -191,7 +190,6 @@ class _PlaceDetailsPageState extends State<PlaceDetailsPage> {
         return "Zanimljiva lokacija u Hrvatskoj vrijedna posjeta";
       }
     } else {
-      // Engleske verzije
       if (widget.place.category == 'culture' || widget.place.category == 'attractions') {
         if (widget.place.subcategory == 'church' || widget.place.subcategory == 'place_of_worship') {
           return "Significant religious site in Croatian cultural heritage";

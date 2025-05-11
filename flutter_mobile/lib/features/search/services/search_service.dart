@@ -4,11 +4,13 @@ import 'package:flutter_mobile/features/search/model/search_result.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_mobile/core/env_config.dart';
 
 class SearchService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
-  final String _apiKey = 'AIzaSyAk8EgixUGGwE2U6d3-COqq7jtxP1Uxk3U';
+  final String _apiKey = EnvConfig.googleMapsApiKey;
   String get apiKey => _apiKey;
   
   final Map<String, List<String>> _categoryTypesMap = {
@@ -500,7 +502,7 @@ class SearchService {
         Uri.parse('https://api-inference.huggingface.co/models/meta-llama/Llama-3.1-8B-Instruct'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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',
+          'Authorization': 'Bearer ${EnvConfig.huggingFaceApiKey}',
         },
         body: jsonEncode({
           'inputs': promptBase,
