@@ -11,6 +11,7 @@ import 'package:flutter_mobile/core/env_config.dart';
 import 'package:flutter_mobile/features/notifications/services/notification_service.dart';
 import 'package:flutter_mobile/features/notifications/widgets/in_app_notification.dart';
 import 'package:flutter_mobile/features/location/services/location_service.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'l10n/l10n.dart';
 import 'core/locale_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -25,7 +26,10 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  // Održava splash screen dok se sve ne inicijalizira
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+  
   await EnvConfig.init();
   await Firebase.initializeApp();
   
@@ -40,6 +44,9 @@ void main() async {
   await NotificationService().init();
   
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  // Uklanja splash screen nakon inicijalizacije
+  FlutterNativeSplash.remove();
   
   runApp(const MyApp());
 }
@@ -96,6 +103,7 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         navigatorKey: navigatorKey,
+        title: "CityScope",
         locale: _locale,
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
@@ -125,24 +133,6 @@ class _MyAppState extends State<MyApp> {
             child: child ?? const SizedBox.shrink(),
           );
         },
-      ),
-    );
-  }
-}
-
-
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFF368564),
-      body: Center(
-        child: Image.asset(
-          'assets/images/cityscope.png',
-          width: 180,
-        ),
       ),
     );
   }

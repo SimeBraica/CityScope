@@ -1,0 +1,24 @@
+flutter_native_splash:
+  # Boja pozadine
+  color: "#368564"
+  
+  # Putanja do slike (koristit ćemo postojeću cityscope.png sliku)
+  image: assets/images/cityscope.png
+  
+  # Prilagodi boju statusa
+  android_12:
+    image: assets/images/cityscope.png
+    icon_background_color: "#368564"
+    
+  # Web konfiguracija
+  web: false
+  
+  # Za promjenu ikone aplikacije
+  android: true
+  ios: true
+  
+  # Postavke za iOS
+  ios_content_mode: center
+  
+  # Postavke za Android
+  android_gravity: center 
