@@ -81,5 +81,5 @@ flutter:
 
 ## Ograničenja
 
-Kako se radi o demo projekti koji je izgrađen bez budžeta, a koristi Firebase, Google Cloud i Hugging Face API pozive moguće je da neke funkcionalnosti s vremenom postanu ograničene. 
+Kako se radi o demo projektu koji je izgrađen bez budžeta, a koristi Firebase, Google Cloud i Hugging Face API pozive moguće je da neke funkcionalnosti s vremenom postanu ograničene. 
 Najznačajnija takva funkcionalnost jest AI generacija zabavnih činjenica. Kako platforma hugging face ima ograničenje na besplatno korištenje javno dostupnih modela, jednom kada token koji je korišten u izradi aplikacije prijeđe tu granicu više neće biti moguće dobijati AI generirane činjenice, već će se koristiti fallback mehanizam na hard coded vrijednosti. Iz istog razloga geolokacijske obavijesti ne sadržavaju zabavne činjenice već isključivo lokaciju na kojoj se korisnik nalazi. 
