@@ -33,10 +33,8 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
     });
     
     try {
-      // Get current user ID
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
-        // Fetch user settings from Firestore
         final doc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
         if (doc.exists && doc.data() != null) {
           final data = doc.data()!;
@@ -45,7 +43,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             notificationsEnabled = data['notificationsEnabled'] ?? true;
             geoEnabled = data['geoEnabled'] ?? false;
             
-            // Parse time settings if they exist
             if (data['notificationTime'] != null) {
               final timeData = data['notificationTime'];
               if (timeData['from'] != null) {
@@ -72,9 +69,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         }
       }
       
-      // Check if Firebase Messaging should be initialized
-      if (!kIsWeb) { // Only use FCM on mobile platforms, not web
-        // Initialize Firebase Messaging and get token
+      if (!kIsWeb) {
         await _initFCM();
       } else {
         setState(() {
@@ -82,7 +77,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         });
       }
     } catch (e) {
-      // Handle errors gracefully
       print('Error loading settings: $e');
       setState(() {
         isLoading = false; 
@@ -92,21 +86,16 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
   Future<void> _initFCM() async {
     try {
-      // Platform-specific FCM initialization
       if (Platform.isIOS) {
-        // For iOS, we need to handle APNS token differently
-        // First, get the APNs token when possible
         String? apnsToken;
         try {
           apnsToken = await FirebaseMessaging.instance.getAPNSToken();
           print('APNS Token: $apnsToken');
         } catch (apnsError) {
           print('Error getting APNS token: $apnsError');
-          // Continue even if APNS token retrieval fails
         }
       }
       
-      // Request notification permissions from the user
       NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
@@ -115,17 +104,14 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
-        // User granted permission
         setState(() {
           notificationsEnabled = true;
         });
         
-        // Get and store the FCM token with proper error handling
         try {
           fcmToken = await FirebaseMessaging.instance.getToken();
           print('FCM Token: $fcmToken');
           
-          // Save the token in Firestore for the current user
           final userId = FirebaseAuth.instance.currentUser?.uid;
           if (userId != null && fcmToken != null) {
             await FirebaseFirestore.instance.collection('users').doc(userId).set({
@@ -135,9 +121,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             }, SetOptions(merge: true));
           }
           
-          // Set up token refresh listener
           FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
-            // Update token in Firestore when it refreshes
             final userId = FirebaseAuth.instance.currentUser?.uid;
             if (userId != null) {
               FirebaseFirestore.instance.collection('users').doc(userId).set({
@@ -147,20 +131,16 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             }
           });
         } catch (tokenError) {
-          // Handle specific errors related to token retrieval
           print('Error getting FCM token: $tokenError');
-          // Continue with the app even if token retrieval fails
         }
       } else {
-        // User denied permission
         setState(() {
           notificationsEnabled = false;
-          geoEnabled = false; // Also disable geo notifications
+          geoEnabled = false; 
         });
       }
     } catch (e) {
       print('Error initializing FCM: $e');
-      // Allow the app to continue without FCM if needed
     } finally {
       setState(() {
         isLoading = false;
@@ -169,11 +149,10 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   }
 
   Future<void> _pickTimeRange() async {
-    // First pick the FROM time
     final pickedFrom = await showTimePicker(
       context: context,
       initialTime: from,
-      helpText: 'Select FROM time',
+      helpText: AppLocalizations.of(context)!.selectFromTime,
     );
     
     if (pickedFrom != null) {
@@ -181,11 +160,10 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         from = pickedFrom;
       });
       
-      // Then pick the TO time
       final pickedTo = await showTimePicker(
         context: context,
         initialTime: to,
-        helpText: 'Select TO time',
+        helpText: AppLocalizations.of(context)!.selectToTime,
       );
       
       if (pickedTo != null) {
@@ -193,7 +171,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           to = pickedTo;
         });
         
-        // After both times are selected, save settings
         _saveSettings();
       }
     }
@@ -213,7 +190,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         },
       }, SetOptions(merge: true));
     } catch (e) {
-      // Handle error
       print('Error saving settings: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to save settings: $e')),
@@ -223,7 +199,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
 
   Future<void> _toggleNotifications(bool value) async {
     if (value) {
-      // If turning on notifications, request permission
       NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
@@ -236,7 +211,6 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           notificationsEnabled = true;
         });
       } else {
-        // User denied permission
         setState(() {
           notificationsEnabled = false;
           geoEnabled = false;
@@ -247,14 +221,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
         return;
       }
     } else {
-      // Simply turn off notifications
       setState(() {
         notificationsEnabled = false;
-        geoEnabled = false; // Also disable geo notifications
+        geoEnabled = false;
       });
     }
     
-    _saveSettings(); // Save the new settings
+    _saveSettings();
   }
 
   @override

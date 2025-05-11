@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_mobile/features/settings/pages/settings.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:flutter_mobile/features/search/presentation/pages/search.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,6 +19,9 @@ class _HomePageState extends State<HomePage> {
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
   bool _locationLoading = true;
+  
+  // Za prikaz markera korisnikove lokacije
+  Set<Marker> _markers = {};
 
   static const LatLng zagrebLatLng = LatLng(45.8150, 15.9819);
 
@@ -26,7 +30,6 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _getLocation();
   }
-
 
   Future<void> _getLocation() async {
     bool serviceEnabled;
@@ -38,6 +41,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _currentPosition = zagrebLatLng;
           _locationLoading = false;
+          _setUserLocationMarker();
         });
       }
       return;
@@ -51,6 +55,7 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _currentPosition = zagrebLatLng;
             _locationLoading = false;
+            _setUserLocationMarker();
           });
         }
         return;
@@ -62,6 +67,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _currentPosition = zagrebLatLng;
           _locationLoading = false;
+          _setUserLocationMarker();
         });
       }
       return;
@@ -76,6 +82,7 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _currentPosition = LatLng(position.latitude, position.longitude);
           _locationLoading = false;
+          _setUserLocationMarker();
         });
       }
     } catch (e) {
@@ -84,15 +91,35 @@ class _HomePageState extends State<HomePage> {
         setState(() {
           _currentPosition = zagrebLatLng;
           _locationLoading = false;
+          _setUserLocationMarker();
         });
       }
     }
+  }
+  
+  // Postavi marker korisnikove lokacije
+  void _setUserLocationMarker() {
+    if (_currentPosition == null) return;
+    
+    setState(() {
+      _markers = {
+        Marker(
+          markerId: const MarkerId('user_location'),
+          position: _currentPosition!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+          infoWindow: InfoWindow(
+            title: AppLocalizations.of(context)?.yourLocation ?? 'Vaša lokacija',
+          ),
+        ),
+      };
+    });
   }
 
   Widget _buildMap() {
     if (_locationLoading || _currentPosition == null) {
       return const Center(child: CircularProgressIndicator());
     }
+    
     return Stack(
       children: [
         GoogleMap(
@@ -102,14 +129,13 @@ class _HomePageState extends State<HomePage> {
           ),
           myLocationEnabled: true,
           myLocationButtonEnabled: true,
-          onMapCreated: (controller) => _mapController = controller,
-          markers: {
-            Marker(
-              markerId: const MarkerId('user_location'),
-              position: _currentPosition!,
-            ),
+          onMapCreated: (controller) {
+            _mapController = controller;
           },
+          markers: _markers,
         ),
+        
+        // Gumb za pretragu na donjem dijelu ekrana
         Positioned(
           left: 0,
           right: 0,
@@ -118,7 +144,9 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Otvori search.dart
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const SearchPage()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF368564),
@@ -178,7 +206,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
         selectedItemColor: const Color(0xFF368564),
-        unselectedItemColor: Colors.grey,
         backgroundColor: Colors.white,
       ),
     );
