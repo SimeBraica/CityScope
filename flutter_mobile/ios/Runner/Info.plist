@@ -38,14 +38,17 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Ova aplikacija koristi vašu lokaciju za prikaz na karti.</string>
+	<string>Ova aplikacija koristi vašu lokaciju za prikaz na karti i slanje obavijesti o obližnjim znamenitostima.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Ova aplikacija koristi vašu lokaciju za prikaz na karti.</string>
+	<string>Ova aplikacija koristi vašu lokaciju za prikaz na karti i slanje obavijesti o obližnjim znamenitostima.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Ova aplikacija koristi vašu lokaciju za slanje obavijesti o obližnjim znamenitostima čak i kada aplikacija nije aktivna.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>location</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

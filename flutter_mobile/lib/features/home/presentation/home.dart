@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_mobile/features/auth/presentation/pages/login/login.dart';
@@ -14,23 +15,60 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 1; // 0: Izdvojeno, 1: Mapa, 2: Postavke
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
+  int _selectedIndex = 1; 
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
   bool _locationLoading = true;
   
   Set<Marker> _markers = {};
+  Timer? _locationTimer;
 
   static const LatLng zagrebLatLng = LatLng(45.8150, 15.9819);
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _getLocation();
+    
+    _locationTimer = Timer.periodic(const Duration(minutes: 2), (timer) {
+      if (_selectedIndex == 1) {
+        _getLocation();
+      }
+    });
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_selectedIndex == 1) {
+      _getLocation();
+    }
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _selectedIndex == 1) {
+      _getLocation();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _locationTimer?.cancel();
+    _mapController?.dispose();
+    super.dispose();
   }
 
   Future<void> _getLocation() async {
+    if (!mounted) return;
+    
+    setState(() {
+      _locationLoading = true;
+    });
+    
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -155,7 +193,8 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(AppLocalizations.of(context)!.exploreArea, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+                  Text(AppLocalizations.of(context)!.exploreArea, 
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
                   const SizedBox(width: 8),
                   const Icon(Icons.arrow_forward, color: Colors.white),
                 ],
@@ -168,10 +207,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBody() {
-    if (_selectedIndex == 1) {
+    if (_selectedIndex == 0) {
       return _buildMap();
-    } else if (_selectedIndex == 0) {
-      return const Center(child: Text('Izdvojeno', style: TextStyle(fontSize: 24)));
     } else {
       return const SettingsPage();
     }
@@ -187,12 +224,13 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _selectedIndex = index;
           });
+          
+          if (index == 1) {
+            _getLocation();
+          }
         },
         items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.star_border),
-            label: AppLocalizations.of(context)!.featured,
-          ),
+
           BottomNavigationBarItem(
             icon: const Icon(Icons.map),
             label: AppLocalizations.of(context)!.map,

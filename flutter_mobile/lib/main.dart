@@ -8,20 +8,39 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io' show File, Platform;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_mobile/core/env_config.dart';
+import 'package:flutter_mobile/features/notifications/services/notification_service.dart';
+import 'package:flutter_mobile/features/notifications/widgets/in_app_notification.dart';
+import 'package:flutter_mobile/features/location/services/location_service.dart';
 import 'l10n/l10n.dart';
 import 'core/locale_provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Ovdje možeš obraditi poruke kada aplikacija nije aktivna
+  await Firebase.initializeApp();
+  
+  print('Pozadinska poruka primljena: ${message.notification?.title}');
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EnvConfig.init();
   await Firebase.initializeApp();
+  
+  if (Platform.isIOS) {
+    await FirebaseMessaging.instance.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
+  
+  await NotificationService().init();
+  
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
   runApp(const MyApp());
 }
 
@@ -35,11 +54,39 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
   Locale? _locale = const Locale('hr');
+  final LocationService _locationService = LocationService();
 
   void setLocale(Locale locale) {
     setState(() {
       _locale = locale;
     });
+  }
+  
+  @override
+  void initState() {
+    super.initState();
+    _setupNotifications();
+  }
+  
+  Future<void> _setupNotifications() async {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print('Poruka u prednjem planu primljena: ${message.notification?.title}');
+      
+      if (message.notification != null) {
+        NotificationService().showNotification(
+          title: message.notification!.title ?? 'CityScope',
+          body: message.notification!.body ?? '',
+        );
+      }
+    });
+    
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print('Aplikacija otvorena kroz notifikaciju: ${message.notification?.title}');
+    });
+    
+    _locationService.startLocationTracking(
+      languageCode: _locale?.languageCode ?? 'hr',
+    );
   }
 
   @override
@@ -48,6 +95,7 @@ class _MyAppState extends State<MyApp> {
       setLocale: setLocale,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
+        navigatorKey: navigatorKey,
         locale: _locale,
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: const [
@@ -66,10 +114,17 @@ class _MyAppState extends State<MyApp> {
           }
           return const Locale('hr');
         },
-        home: Login(),
+        home: InAppNotificationWrapper(
+          child: Login(),
+        ),
         navigatorObservers: [
           FirebaseAnalyticsObserver(analytics: _analytics),
         ],
+        builder: (context, child) {
+          return InAppNotificationWrapper(
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
       ),
     );
   }

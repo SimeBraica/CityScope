@@ -312,13 +312,11 @@ class SearchService {
   Future<Map<String, String?>> getWikipediaInfo(String placeName, String language) async {
     final String wikipediaLang = language == 'hr' ? 'hr' : 'en';
     
-    // Priprema naziva za pretragu - za različite tipove objekata pokušaj različite varijante naziva
     String searchName = placeName;
     List<String> simplifiedNames = [searchName];
     
     print('Pretraga Wikipedije za "$placeName" (jezik: $wikipediaLang)');
     
-    // Specifični slučajevi za poznate objekte
     if (placeName.toLowerCase().contains('zagreb') && 
         (placeName.toLowerCase().contains('katedrala') || placeName.toLowerCase().contains('cathedral'))) {
       if (wikipediaLang == 'hr') {
@@ -472,6 +470,7 @@ class SearchService {
         ? "Generiraj kratku zanimljivu činjenicu (jedna rečenica) o mjestu: $placeName. Maksimalno 150 znakova. ODGOVORI ISKLJUČIVO NA HRVATSKOM JEZIKU."
         : "Generate a short one sentence fun fact about $placeName. Maximum 150 characters. ANSWER IN ENGLISH ONLY.";
       
+      // TODO: ako nađem bolji model poslati i ovo
       // if (category != null) {
       //   promptBase += languageCode == 'hr' 
       //     ? " Kategorija: $category." 
