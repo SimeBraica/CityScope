@@ -20,7 +20,6 @@ class _HomePageState extends State<HomePage> {
   LatLng? _currentPosition;
   bool _locationLoading = true;
   
-  // Za prikaz markera korisnikove lokacije
   Set<Marker> _markers = {};
 
   static const LatLng zagrebLatLng = LatLng(45.8150, 15.9819);
@@ -97,7 +96,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
   
-  // Postavi marker korisnikove lokacije
   void _setUserLocationMarker() {
     if (_currentPosition == null) return;
     
@@ -135,7 +133,6 @@ class _HomePageState extends State<HomePage> {
           markers: _markers,
         ),
         
-        // Gumb za pretragu na donjem dijelu ekrana
         Positioned(
           left: 0,
           right: 0,

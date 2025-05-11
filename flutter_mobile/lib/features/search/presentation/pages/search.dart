@@ -58,7 +58,10 @@ class _SearchPageState extends State<SearchPage> {
       {'id': 'bakery', 'name': 'Pekare', 'en_name': 'Bakeries'},
       {'id': 'asian', 'name': 'Azijska', 'en_name': 'Asian'},
       {'id': 'italian', 'name': 'Talijanska', 'en_name': 'Italian'},
+      {'id': 'american', 'name': 'Američka', 'en_name': 'American'},
+      {'id': 'indian', 'name': 'Indijska', 'en_name': 'Indian'},
       {'id': 'fastfood', 'name': 'Brza hrana', 'en_name': 'Fast Food'},
+      {'id': 'local', 'name': 'Lokalna kuhinja', 'en_name': 'Local Cuisine'},
     ],
     'attractions': [
       {'id': 'park', 'name': 'Parkovi', 'en_name': 'Parks'},

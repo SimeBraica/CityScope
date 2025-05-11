@@ -25,7 +25,7 @@ class SearchService {
     required double maxPrice, // u €
     required Set<String> categories,
     required Map<String, List<String>> userInterests,
-    Set<String>? subcategories, // Dodana podrška za potkategorije
+    Set<String>? subcategories, 
   }) async {
     if (categories.isEmpty) {
       return [];
@@ -105,7 +105,7 @@ class SearchService {
       'key': _apiKey,
     };
     
-    if (type == 'asian' || type == 'italian' || type == 'fastfood') {
+    if (type == 'asian' || type == 'italian' || type == 'fastfood' || type == 'american' || type == 'indian' || type == 'local') {
       params['type'] = 'restaurant';
       
       if (keyword != null && keyword.isNotEmpty) {
@@ -238,7 +238,6 @@ class SearchService {
     }
   }
   
-  // Pomoćna metoda za dobijanje prevedenog naziva kuhinje
   String _getTranslatedCuisine(String? cuisineType) {
     switch (cuisineType) {
       case 'asian':
@@ -247,6 +246,12 @@ class SearchService {
         return 'italian pizza pasta';
       case 'fastfood':
         return 'fast food burger mcdonalds kfc';
+      case 'american':
+        return 'american burger mcdonalds kfc';
+      case 'indian':
+        return 'indian curry tandoori';
+      case 'local':
+        return 'local traditional croatian domaća kuhinja specijaliteti lokalna hrana gdje lokalci jedu';
       default:
         return cuisineType ?? '';
     }
@@ -308,7 +313,7 @@ class SearchService {
     for (final subcategory in subcategories) {
       if (category == 'food') {
         if(['restaurant', 'cafe', 'bar', 'bakery', 'meal_delivery', 'meal_takeaway'].contains(subcategory) ||
-           ['asian', 'italian', 'fastfood'].contains(subcategory)) {
+           ['asian', 'italian', 'fastfood', 'american', 'indian', 'local'].contains(subcategory)) {
           result.add(subcategory);
         }
       } else if (category == 'attractions') {
