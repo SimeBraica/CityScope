@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
-  int _selectedIndex = 1; 
+  int _selectedIndex = 0; 
   GoogleMapController? _mapController;
   LatLng? _currentPosition;
   bool _locationLoading = true;
@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
     _getLocation();
     
     _locationTimer = Timer.periodic(const Duration(minutes: 2), (timer) {
-      if (_selectedIndex == 1) {
+      if (_selectedIndex == 0) {
         _getLocation();
       }
     });
@@ -42,14 +42,14 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_selectedIndex == 1) {
+    if (_selectedIndex == 0) {
       _getLocation();
     }
   }
   
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _selectedIndex == 1) {
+    if (state == AppLifecycleState.resumed && _selectedIndex == 0) {
       _getLocation();
     }
   }
@@ -225,12 +225,11 @@ class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
             _selectedIndex = index;
           });
           
-          if (index == 1) {
+          if (index == 0) {
             _getLocation();
           }
         },
         items: [
-
           BottomNavigationBarItem(
             icon: const Icon(Icons.map),
             label: AppLocalizations.of(context)!.map,
